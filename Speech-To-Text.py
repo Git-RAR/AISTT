@@ -11,9 +11,14 @@ import sounddevice
 recording = False
 audio_chunks = []
 
+with open('config.json') as f:
+    config = json.load(f)
+
+api_key = config['API_KEY']
+
 
 def deepgram_api():
-    DEEPGRAM_API_KEY = 'YOUR_API_KEY'
+    DEEPGRAM_API_KEY = api_key
 
     FILE = os.path.abspath('recording1.wav')
 
@@ -24,25 +29,12 @@ def deepgram_api():
         deepgram = Deepgram(DEEPGRAM_API_KEY)
 
         if FILE.startswith('http'):
-            source = {
-                'url': FILE
-            }
+            source = {'url': FILE}
         else:
             audio = open(FILE, 'rb')
-            source = {
-                'buffer': audio,
-                'mimetype': MIMETYPE
-            }
+            source = {'buffer': audio, 'mimetype': MIMETYPE}
 
-        response = await asyncio.create_task(
-            deepgram.transcription.prerecorded(
-                source,
-                {
-                    'smart_format': True,
-                    'model': 'nova',
-                }
-            )
-        )
+        response = await asyncio.create_task(deepgram.transcription.prerecorded(source, {'smart_format': True, 'model': 'nova', }))
         #fmt:off
         text_area.insert(END, str(response["results"]["channels"][0]["alternatives"][0]["transcript"]))
         #fmt:on
